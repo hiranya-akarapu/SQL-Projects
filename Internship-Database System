@@ -1,0 +1,17 @@
+
+CREATE DATABASE IF NOT EXISTS Internships; 
+USE Internships; 
+
+CREATE TABLE Internships (
+	InternshipID INT PRIMARY KEY AUTO_INCREMENT,
+    CompanyName VARCHAR(255) NOT NULL,
+    JobTitle VARCHAR(255) NOT NULL, 
+    StartDate DATE,
+    EndDate DATE,
+    Location VARCHAR(255),
+    Mode ENUM('Remote', 'Hybrid', 'In-person')NOT NULL,
+    Status ENUM ('Not Started', 'In Progress', 'Accepted', 'Denied')NOT NULL
+); 
+
+INSERT INTO Internships (CompanyName, JobTitle, StartDate, EndDate, Location, Mode, Status)
+VALUES ('AllState', 'Process Intelligence Intern','2025-05-01', '2025-07-01', 'USA', 'Remote', 'Not Started');
