@@ -1,17 +1,56 @@
+-- Create the database if it does not exist
+CREATE DATABASE IF NOT EXISTS Internships;
+USE Internships;
 
-CREATE DATABASE IF NOT EXISTS Internships; 
-USE Internships; 
+-- Create the Companies table
+CREATE TABLE IF NOT EXISTS Companies (
+    CompanyID INT PRIMARY KEY AUTO_INCREMENT,
+    CompanyName VARCHAR(255) UNIQUE NOT NULL
+);
 
-CREATE TABLE Internships (
-	InternshipID INT PRIMARY KEY AUTO_INCREMENT,
-    CompanyName VARCHAR(255) NOT NULL,
-    JobTitle VARCHAR(255) NOT NULL, 
-    StartDate DATE,
-    EndDate DATE,
-    Location VARCHAR(255),
-    Mode ENUM('Remote', 'Hybrid', 'In-person')NOT NULL,
-    Status ENUM ('Not Started', 'In Progress', 'Accepted', 'Denied')NOT NULL
-); 
+-- Create the JobTitles table
+CREATE TABLE IF NOT EXISTS JobTitles (
+    JobTitleID INT PRIMARY KEY AUTO_INCREMENT,
+    JobTitle VARCHAR(255) UNIQUE NOT NULL
+);
 
-INSERT INTO Internships (CompanyName, JobTitle, StartDate, EndDate, Location, Mode, Status)
-VALUES ('AllState', 'Process Intelligence Intern','2025-05-01', '2025-07-01', 'USA', 'Remote', 'Not Started');
+-- Create the Locations table
+CREATE TABLE IF NOT EXISTS Locations (
+    LocationID INT PRIMARY KEY AUTO_INCREMENT,
+    Location VARCHAR(255) UNIQUE NOT NULL
+);
+
+-- Create the Internships table, with foreign keys linking to related tables
+CREATE TABLE IF NOT EXISTS Internships (
+    InternshipID INT PRIMARY KEY AUTO_INCREMENT,
+    CompanyID INT NOT NULL,
+    JobTitleID INT NOT NULL,
+    StartDate DATE CHECK (StartDate >= CURRENT_DATE), 
+    EndDate DATE CHECK (EndDate > StartDate), 
+    LocationID INT NOT NULL, 
+    Mode ENUM('Remote', 'Hybrid', 'In-person') NOT NULL,
+    Status ENUM('Not Started', 'In Progress', 'Accepted', 'Denied') NOT NULL,
+    DateAdded TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Foreign key constraints to ensure referential integrity
+    FOREIGN KEY (CompanyID) REFERENCES Companies(CompanyID) ON DELETE CASCADE,
+    FOREIGN KEY (JobTitleID) REFERENCES JobTitles(JobTitleID) ON DELETE CASCADE,
+    FOREIGN KEY (LocationID) REFERENCES Locations(LocationID) ON DELETE CASCADE,
+    
+    -- Ensure unique internships for the same company, title, and start date
+    UNIQUE KEY unique_internship (CompanyID, JobTitleID, StartDate)
+);
+
+-- Insert initial data into Companies, JobTitles, and Locations
+INSERT INTO Companies (CompanyName) VALUES ('AllState');
+INSERT INTO JobTitles (JobTitle) VALUES ('Process Intelligence Intern');
+INSERT INTO Locations (Location) VALUES ('USA');
+
+-- Insert initial internship data using IDs from relational tables
+INSERT INTO Internships (CompanyID, JobTitleID, StartDate, EndDate, LocationID, Mode, Status)
+VALUES 
+((SELECT CompanyID FROM Companies WHERE CompanyName = 'AllState'), 
+ (SELECT JobTitleID FROM JobTitles WHERE JobTitle = 'Process Intelligence Intern'), 
+ '2025-05-01', '2025-07-01', 
+ (SELECT LocationID FROM Locations WHERE Location = 'USA'), 
+ 'Remote', 'Not Started');
